@@ -1,9 +1,6 @@
 import requests
 import json
 
-api_token = "9e28a0217f6247e48223e7253074b40e"
-# token = "Id5099qzV9KyyO4Q"
-
 
 class YandexDirectError(Exception):
 
