@@ -1,0 +1,9 @@
+certifi==14.05.14
+cssselect==0.9.1
+greenlet==0.4.6
+lxml==3.4.2
+motor==0.4
+pymongo==2.8
+requests==2.5.1
+tornado==4.1
+jsonschema==2.4
