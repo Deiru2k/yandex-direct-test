@@ -40,7 +40,7 @@ class YandexDirectProxy:
         request_data['method'] = method
         if data:
             request_data['param'] = data
-        request_data = json.dumps(request_data)
+        request_data = json.dumps(request_data).encode('utf8')
         response = requests.post(url=self.url, data=request_data)
         response_data = json.loads(response.text)
         if "error_code" in response_data:

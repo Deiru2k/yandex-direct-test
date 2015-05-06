@@ -11,7 +11,7 @@ campaign = {
         "campaignID": integer,
         "name": string,
         "fIO": string,
-        "startDate": integer,
+        "startDate": string,
         "strategy": {
             "type": "object",
             "required": ["strategyName"],

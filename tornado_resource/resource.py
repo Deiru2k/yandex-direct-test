@@ -1,3 +1,4 @@
+import traceback
 from tornado import httputil
 from tornado.web import RequestHandler, HTTPError
 from bson import json_util as json
@@ -25,6 +26,7 @@ class Resource(RequestHandler):
         self.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
         self.set_header("Access-Control-Expose-Headers", "Origin, Content-Type, Authorization")
         self.set_header("Access-Control-Allow-Headers", 'Origin, Content-Type, Authorization')
+        self.set_header("Content-Type", "application/json")
 
     def error(self, code, message, data=None, errors=None):
         self.set_status(code)
@@ -58,6 +60,7 @@ class Resource(RequestHandler):
             self.error(500, error.message, error.code, error.error)
         except Exception:
             self.error(500, "Interal Server Error")
+            print(traceback.format_exc())
 
 
 
