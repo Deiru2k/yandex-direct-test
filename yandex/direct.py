@@ -64,6 +64,12 @@ class YandexDirect(YandexDirectProxy):
     def create_campaign(self, campaign_info: dict):
         return self.request("CreateOrUpdateCampaign", campaign_info)
 
+    def get_campaign(self, campaign_id: int):
+        data = {
+            "CampaignIDS": [campaign_id]
+        }
+        return self.request("GetCampaignsParams", data)[0]
+
     def update_campaign(self, campaign_info: dict):
         return self.create_campaign(campaign_info)
 
@@ -107,76 +113,3 @@ class YandexDirect(YandexDirectProxy):
             "Surname": last_name
         }
         return self.request("CreateNewSubclient", data)
-
-
-if __name__ == "__main__":
-
-    yandex = YandexDirect(token=api_token, sandbox=True, locale="ru")
-    campaign_data = {
-        "Name":"Promotion of home appliances",
-        "FIO":"Alex Gromov",
-        "Strategy":{
-            "StrategyName":"WeeklyBudget",
-            "WeeklySumLimit":400,
-            "MaxPrice":8
-        },
-        "TimeTarget":{
-            "TimeZone":"Europe/Moscow",
-            "DaysHours":[
-                {
-                    "Hours":[1,2,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],
-                    "Days":[1,2,3,4,5]
-                },
-                {
-                    "Hours":[10,11,12,13,14,15,16,17,18,19,20],
-                    "Days":[6,7]
-                }
-            ],
-            "ShowOnHolidays":"Yes"
-        },
-        "StatusBehavior":"Yes",
-        "StatusContextStop":"No",
-        "ContextLimit":"Default",
-        "ContextLimitSum":30,
-        "ContextPricePercent":100,
-        "AutoOptimization":"Yes",
-        "StatusMetricaControl":"Yes",
-        "DisabledDomains": "domain1.ru,domain2.ru",
-        "DisabledIps": "64.234.23.21",
-        "StatusOpenStat":"No",
-        "ConsiderTimeTarget":"Yes",
-        "AddRelevantPhrases":"No",
-        "RelevantPhrasesBudgetLimit":100,
-        "MinusKeywords":[],
-        "SmsNotification":{
-            "SmsTimeFrom":"09:00",
-            "MoneyInSms":"Yes",
-            "SmsTimeTo":"21:00",
-            "MoneyOutSms":"Yes",
-            "ModerateResultSms":"Yes",
-            "MetricaSms":"Yes"
-        },
-        "EmailNotification":{
-            "MoneyWarningValue":20,
-            "SendAccNews":"Yes",
-            "WarnPlaceInterval":60,
-            "SendWarn":"Yes",
-            "Email":"agrom@yandex.ru"
-        }
-    }
-    # try:
-    #    r = yandex.create_campaign(campaign_data)
-    #    print(r)
-    # except YandexDirectError as yaerror:
-    #    print(yaerror)
-    # yandex.delete_campaign(89357)
-    # yandex.stop_campaign(89356)
-    # yandex.archive_campaign(89356)
-    # r = yandex.list_campaigns()
-    # yandex.create_client("Misaka42", "Misaka", "Mikoto")
-    r = yandex.list_clients()
-    for client in r:
-        print("%s: %s - %s" % (client['Login'], client['FIO'], client['Role']))
-        client_campaigns = yandex.list_campaigns(client['Login'])
-        for campaign in client_campaigns:
-            print("\t%s: %s - %s" % (campaign['CampaignID'], campaign['Name'], campaign['Status']))

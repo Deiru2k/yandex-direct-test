@@ -17,11 +17,11 @@ class UserCampaignList(Resource):
 
         @authenticated_async()
         @coroutine
-        def get(self, username):
+        def get(self, username: str):
             if self.user['username'] != username and "admins" not in self.user['groups']:
                 raise APIError(code=403, message="Недостаточно прав для просмотра этих кампаний")
             page = self.get_argument("page", 0)
-            if isinstance(page, str) and page.is_digit():
+            if isinstance(page, str) and page.isdigit():
                 page = int(page)
             elif isinstance(page, int):
                 pass
@@ -42,12 +42,114 @@ class UserCampaignList(Resource):
         @authenticated_async()
         @validate(input_schema=schemas.campaigns.campaign)
         @coroutine
-        def post(self, username):
+        def post(self, username: str):
             if self.user['username'] != username and "admins" not in self.user['groups']:
                 raise APIError(code=403, message="Недостаточно прав для добавления кампаний пользователю")
             campaign_data = convert_keys(self.input, lower_to_upper_camel)
-            campaign_data['Login'] = username
-            campaign_data['FIO'] = "%s %s" % (self.user['firstName'], self.user['lastName'])
-            campaign_data['CampaignID'] = 0
+            override_data = {
+                "Login": username,
+                "FIO": "%s %s" % (self.user['firstName'], self.user['lastName']),
+                'CampaignID': 0
+            }
+            campaign_data.update(override_data)
             self.yd.create_campaign(campaign_data)
             return 201, None
+
+
+class UserCampaign(Resource):
+
+    name = "campaign"
+    url = "/campaigns/(.*)/(.*)"
+
+    class Handler(BaseHandler):
+
+        @authenticated_async()
+        @coroutine
+        def get(self, username: str, campaign_id: str):
+            if self.user['username'] != username and "admins" not in self.user['groups']:
+                raise APIError(code=403, message="Недостаточно прав для просмотра данной кампании")
+            if not campaign_id.isdigit():
+                raise APIError(code=400, message="Некорректный ID кампании")
+            campaign_id = int(campaign_id)
+            campaign = self.yd.get_campaign(campaign_id)
+            campaign = convert_keys(campaign, upper_to_lower_camel)
+            return 200, campaign
+
+        @authenticated_async()
+        @validate(input_schema=schemas.campaigns.campaign)
+        @coroutine
+        def put(self, username: str, campaign_id: str):
+            if self.user['username'] != username and "admins" not in self.user['groups']:
+                raise APIError(code=403, message="Недостаточно прав для изменения данной кампании")
+            if not campaign_id.isdigit():
+                raise APIError(code=400, message="Некорректный ID кампании")
+            campaign_id = int(campaign_id)
+            campaign_data = self.input
+            override_data = {
+                "Login": username,
+                "FIO": "%s %s" % (self.user['firstName'], self.user['lastName']),
+                "CampaignID": campaign_id,
+            }
+            campaign_data.update(override_data)
+            self.yd.update_campaign(campaign_data)
+            return 204, None
+
+
+class UserCampaignArchive(Resource):
+
+    name = "campaign_archive"
+    url = "/campaigns/(.*)/(.*)/archive"
+
+    class Handler(BaseHandler):
+
+        @authenticated_async()
+        @coroutine
+        def post(self, username: str, campaign_id: str):
+            if self.user['username'] != username and "admins" not in self.user['groups']:
+                raise APIError(code=403, message="Недостаточно прав для архивирования данной кампании")
+            if not campaign_id.isdigit():
+                raise APIError(code=400, message="Некорректный ID кампании")
+            campaign_id = int(campaign_id)
+            self.yd.archive_campaign(campaign_id)
+            return 204, None
+
+        @authenticated_async()
+        @coroutine
+        def delete(self, username: str, campaign_id: str):
+            if self.user['username'] != username and "admins" not in self.user['groups']:
+                raise APIError(code=403, message="Недостаточно прав для восстановления данной кампании из архива")
+            if not campaign_id.isdigit():
+                raise APIError(code=400, message="Некорректный ID кампании")
+            campaign_id = int(campaign_id)
+            self.yd.unarchive_campaign(campaign_id)
+            return 204, None
+
+
+class UserCampaignStop(Resource):
+
+    name = "campaign_stop"
+    url = "/campaigns/(.*)/(.*)/stop"
+
+    class Handler(BaseHandler):
+
+        @authenticated_async()
+        @coroutine
+        def post(self, username: str, campaign_id: str):
+            if self.user['username'] != username and "admins" not in self.user['groups']:
+                raise APIError(code=403, message="Недостаточно прав для остановки данной кампании")
+            if not campaign_id.isdigit():
+                raise APIError(code=400, message="Некорректный ID кампании")
+            campaign_id = int(campaign_id)
+            self.yd.stop_campaign(campaign_id)
+            return 204, None
+
+        @authenticated_async()
+        @coroutine
+        def delete(self, username: str, campaign_id: str):
+            if self.user['username'] != username and "admins" not in self.user['groups']:
+                raise APIError(code=403, message="Недостаточно прав для продолжения данной кампании")
+            if not campaign_id.isdigit():
+                raise APIError(code=400, message="Некорректный ID кампании")
+            campaign_id = int(campaign_id)
+            self.yd.resume_campaign(campaign_id)
+            return 204, None

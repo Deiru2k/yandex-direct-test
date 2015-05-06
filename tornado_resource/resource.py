@@ -1,4 +1,3 @@
-import traceback
 from tornado import httputil
 from tornado.web import RequestHandler, HTTPError
 from bson import json_util as json
@@ -57,6 +56,9 @@ class Resource(RequestHandler):
             self.error(error.status_code, httputil.responses.get(error.status_code, 'unknown error'))
         except YandexDirectError as error:
             self.error(500, error.message, error.code, error.error)
+        except Exception:
+            self.error(500, "Interal Server Error")
+
 
 
     @coroutine
